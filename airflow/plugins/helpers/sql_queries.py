@@ -1,27 +1,29 @@
 class SqlQueries:
-    create_staging_tables = ("""
-    DROP TABLE IF EXISTS staging.country_continent_map;
-    DROP TABLE IF EXISTS staging.corona_data_api;
+    create_staging_tables = ("""    
+    -- Drop tables if they exist already
+    -- DROP TABLE IF EXISTS public.corona_data_api;
     
-    -- Create stage table for base mapping table
-    CREATE TABLE IF NOT EXISTS staging.country_continent_map(
-    "name" varchar, 
-    "alpha_2" varchar, 
-    "alpha_3" varchar, 
-    "country_code" varchar, 
-    "iso_3166_2" varchar, 
-    "region" varchar,
-    "sub_region" varchar, 
-    "intermediate_region" varchar, 
-    "region_code" varchar, 
-    "sub_region_code" varchar,
-    "intermediate_region_code" varchar);
+    -- creating country_continent_map table
+    CREATE TABLE IF NOT EXISTS public.country_continent_map(
+    NAME VARCHAR(50),
+    ALPHA_2 VARCHAR(10),
+    ALPHA_3 VARCHAR(10),
+    COUNTRY_CODE VARCHAR(10),
+    ISO_3166_2 VARCHAR(10),
+    REGION VARCHAR(50),
+    SUB_REGION VARCHAR(50),
+    INTERMEDIATE_REGION VARCHAR(50),
+    REGION_CODE VARCHAR(10),
+    SUB_REGION_CODE VARCHAR(10),
+    INTERMEDIATE_REGION_CODE VARCHAR(10) 
+    );    
     
-    -- Create stage table for source data        
-    CREATE TABLE IF NOT EXISTS staging.corona_data_api(
-    COUNTRY varchar(40),
+    -- creating table to store corona data from api
+    CREATE TABLE IF NOT EXISTS public.corona_data_api(
+    COUNTRY VARCHAR(40),
     RECORD_DATE DATE,
     CASES INT,
     DEATHS INT,
     RECOVERED INT);
+            
     """)
