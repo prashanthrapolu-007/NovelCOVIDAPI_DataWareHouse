@@ -1,7 +1,8 @@
 class SqlQueries:
     create_staging_tables = ("""    
-    -- Drop tables if they exist already
-    -- DROP TABLE IF EXISTS public.corona_data_api;
+    -- Drop tables if required by uncommenting the below two lines
+    --DROP TABLE IF EXISTS public.corona_data_api;
+    --DROP TABLE IF EXISTS public.country_continent_map;
     
     -- creating country_continent_map table
     CREATE TABLE IF NOT EXISTS public.country_continent_map(
@@ -9,7 +10,7 @@ class SqlQueries:
     ALPHA_2 VARCHAR(10),
     ALPHA_3 VARCHAR(10),
     COUNTRY_CODE VARCHAR(10),
-    ISO_3166_2 VARCHAR(10),
+    ISO_3166_2 VARCHAR(20),
     REGION VARCHAR(50),
     SUB_REGION VARCHAR(50),
     INTERMEDIATE_REGION VARCHAR(50),

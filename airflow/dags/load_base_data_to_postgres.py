@@ -18,16 +18,16 @@ print('Printing here')
 print(SqlQueries.create_staging_tables)
 
 with DAG('setup_base_data', default_args=default_args, schedule_interval='@once') as dag:
-    # start_task = DummyOperator(
-    #     task_id='dummy_start'
-    # )
-    #
-    # stage_base_tables = CreateTablesOperator(
-    #     task_id='create_stage_base_tables',
-    #     # postgres_conn_id='postgres_conn',  # os.environ['postgres_connection_id'],
-    #     # database='testdb',
-    #     sql_queries=SqlQueries.create_staging_tables
-    # )
+    start_task = DummyOperator(
+        task_id='dummy_start'
+    )
+
+    stage_base_tables = CreateTablesOperator(
+        task_id='create_stage_base_tables',
+        # postgres_conn_id='postgres_conn',  # os.environ['postgres_connection_id'],
+        # database='testdb',
+        sql_queries=SqlQueries.create_staging_tables
+    )
 
     stage_mapping_table = LoadFromCSVOperator(
         task_id='stage_mapping_table',
@@ -38,5 +38,5 @@ with DAG('setup_base_data', default_args=default_args, schedule_interval='@once'
         table_name='public.country_continent_map'
     )
 
-stage_mapping_table
+start_task >> stage_base_tables >> stage_mapping_table
 

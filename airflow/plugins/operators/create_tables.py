@@ -21,12 +21,8 @@ class CreateTablesOperator(BaseOperator):
         try:
             self.log.info('Creating Stage Tables')
             conn = psycopg2.connect("host=localhost dbname=testdb user=postgres password=admin")
-            self.log.info('2')
             cursor = conn.cursor()
-            self.log.info('3')
-            self.log.info(self.sql_queries)
             cursor.execute(self.sql_queries)
-            self.log.info('4')
             conn.commit()
             self.log.info('Created staging tables')
 

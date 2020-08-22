@@ -1,6 +1,7 @@
 from airflow.operators import BaseOperator
 from airflow.hooks.postgres_hook import PostgresHook
 import psycopg2
+import os
 
 
 class LoadFromCSVOperator(BaseOperator):
@@ -25,7 +26,11 @@ class LoadFromCSVOperator(BaseOperator):
             # connection = pg_hook.get_conn()
             connection = psycopg2.connect("host=localhost dbname=testdb user=postgres password=admin")
             cursor = connection.cursor()
-            with open('./data/country_continent_isocodes.csv', 'r') as f:
+            if os.environ['path_to_data_folder']:
+                file_path = os.environ.get('path_to_data_folder')
+            else:
+                raise ValueError('Environment variable file_path is not set up')
+            with open(file_path+'country_continent_isocodes.csv', 'r') as f:
                 if self.skip_header_row:
                     next(f)
                 cursor.copy_from(f, self.table_name, sep=',')
