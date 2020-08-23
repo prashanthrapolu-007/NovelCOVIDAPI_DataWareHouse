@@ -1,8 +1,8 @@
 class SqlQueries:
     create_staging_tables = ("""    
     -- Drop tables if required by uncommenting the below two lines
-    --DROP TABLE IF EXISTS public.corona_data_api;
-    --DROP TABLE IF EXISTS public.country_continent_map;
+    DROP TABLE IF EXISTS public.corona_data_api;
+    DROP TABLE IF EXISTS public.country_continent_map;
     
     -- creating country_continent_map table
     CREATE TABLE IF NOT EXISTS public.country_continent_map(
