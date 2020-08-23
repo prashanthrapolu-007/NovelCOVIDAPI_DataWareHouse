@@ -35,6 +35,7 @@ class FetchDataFromDBOperator(BaseOperator):
                 writer = csv.writer(file, delimiter=",")
                 writer.writerow(self.headers)
                 writer.writerows(data)
+                file.close()
         except Exception as e:
             self.log.info('Error:{}'.format(e))
         finally:
