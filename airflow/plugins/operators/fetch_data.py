@@ -10,13 +10,11 @@ class FetchDataFromDBOperator(BaseOperator):
 
     @apply_defaults
     def __init__(self,
-                 postgres_conn_id="",
                  sql_queries="",
                  output_file_name="",
                  headers="",
                  *args, **kwargs):
         super(FetchDataFromDBOperator, self).__init__(*args, **kwargs)
-        self.postgres_conn_id = postgres_conn_id
         self.sql_queries = sql_queries
         self.output_file_name = output_file_name
         self.headers = headers

@@ -2,7 +2,7 @@ import requests
 import csv
 
 
-def fetch_api_data_and_store_in_csv(output_file_path, url, country):
+def fetch_historical_api_data(output_file_path, url, country):
     response = requests.get(url)
     if response.status_code == 200:
         data = response.json()
@@ -17,18 +17,50 @@ def fetch_api_data_and_store_in_csv(output_file_path, url, country):
         f.close()
 
 
+def fetch_yesterday_data_from_api(output_file_path, url):
+    response = requests.get(url)
+    if response.status_code == 200:
+        data = response.json()
+        with open(output_file_path, 'w') as file:
+            writer = csv.writer(file, delimiter=",")
+            for message in data:
+                if 'country' in message:
+                    country = message['country']
+                    record_date = list(message['timeline']['cases'].keys())[0]
+                    cases = list(message['timeline']['cases'].values())[0]
+                    deaths = list(message['timeline']['deaths'].values())[0]
+                    recovered = list(message['timeline']['recovered'].values())[0]
+                    writer.writerow([country, record_date, cases, deaths, recovered])
+        file.close()
+
+
 def get_data_from_api(output_file_path, countries_csv_file, history_param):
+    if history_param == 'all':
+        with open(countries_csv_file, 'r') as file:
+            try:
+                read_csv = csv.reader(file, delimiter=',')
+                next(file)
+                for row in read_csv:
+                    country = row[0]
+                    url = 'https://corona.lmao.ninja/v2/historical/' + country + '?lastdays=' + history_param
+                    fetch_historical_api_data(output_file_path, url=url, country=country)
 
-    with open(countries_csv_file, 'r') as file:
+            except Exception as e:
+                raise ValueError(e)
+            finally:
+                file.close()
+
+    elif history_param == 1:
         try:
-            read_csv = csv.reader(file, delimiter=',')
-            next(file)
-            for row in read_csv:
-                country = row[0]
-                url = 'https://corona.lmao.ninja/v2/historical/' + country + '?lastdays=' + history_param
-                fetch_api_data_and_store_in_csv(output_file_path, url=url, country=country)
+            with open(countries_csv_file, 'r') as file:
+                csv_reader = csv.reader(file, delimiter=",")
+                next(file)
+                countries = list(csv_reader)
+            file.close()
 
+            all_countries = ",".join([countries[ind][0] for ind in range(len(countries))])
+            url = 'https://corona.lmao.ninja/v2/historical/' + all_countries + '?lastdays=1'
+            fetch_yesterday_data_from_api(output_file_path, url)
         except Exception as e:
             raise ValueError(e)
-        finally:
-            file.close()
+

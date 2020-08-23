@@ -7,14 +7,10 @@ class CreateTablesOperator(BaseOperator):
 
     @apply_defaults
     def __init__(self,
-                 postgres_conn_id="",
                  sql_queries="",
-                 database="",
                  *args, **kwargs):
         super(CreateTablesOperator, self).__init__(*args, **kwargs)
-        self.postgres_conn_id = postgres_conn_id
         self.sql_queries = sql_queries
-        self.database = database
 
     def execute(self, context):
         try:
