@@ -1,5 +1,4 @@
 from airflow.operators import BaseOperator
-from airflow.hooks.postgres_hook import PostgresHook
 from airflow.utils.decorators import apply_defaults
 import psycopg2
 

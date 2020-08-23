@@ -1,5 +1,4 @@
 from airflow.operators import BaseOperator
-from airflow.hooks.postgres_hook import PostgresHook
 import psycopg2
 import os
 
@@ -22,8 +21,6 @@ class LoadFromCSVOperator(BaseOperator):
     def execute(self, context):
         self.log.info('Loading table {} from CSV'.format(self.table_name))
         try:
-            # pg_hook = PostgresHook(postgres_conn_id=self.postgres_conn_id, schema=self.database)
-            # connection = pg_hook.get_conn()
             connection = psycopg2.connect("host=localhost dbname=testdb user=postgres password=admin")
             cursor = connection.cursor()
             if os.environ['path_to_data_folder']:
@@ -38,3 +35,6 @@ class LoadFromCSVOperator(BaseOperator):
             self.log.info('Successfully loaded table {} from CSV'.format(self.table_name))
         except Exception as e:
             self.log.info('Error:{}'.format(e))
+        finally:
+            connection.close()
+            self.log.info('Connection closed successfully!')

@@ -1,7 +1,7 @@
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.python_operator import PythonOperator
 from airflow import DAG
-from operators import CreateTablesOperator, LoadFromCSVOperator
+from operators import CreateTablesOperator, LoadFromCSVOperator, FetchDataFromDBOperator
 from helpers import SqlQueries, pyhelpers
 from airflow.operators.sqlite_operator import SqliteOperator
 
@@ -14,15 +14,13 @@ default_args = {
     'retry_delay': timedelta(minutes=5)
 }
 
-print('Printing here')
-print(SqlQueries.create_staging_tables)
 
 with DAG('setup_base_data', default_args=default_args, schedule_interval='@once') as dag:
     start_task = DummyOperator(
         task_id='dummy_start'
     )
 
-    stage_base_tables = CreateTablesOperator(
+    create_base_tables = CreateTablesOperator(
         task_id='create_stage_base_tables',
         # postgres_conn_id='postgres_conn',  # os.environ['postgres_connection_id'],
         # database='testdb',
@@ -38,5 +36,12 @@ with DAG('setup_base_data', default_args=default_args, schedule_interval='@once'
         table_name='public.country_continent_map'
     )
 
-start_task >> stage_base_tables >> stage_mapping_table
+    fetch_country_names = FetchDataFromDBOperator(
+        task_id='fetch_country_names',
+        sql_queries=SqlQueries.fetch_country_names,
+        output_file_name='countries',
+        headers=['Country']
+    )
+
+start_task >> create_base_tables >> stage_mapping_table >> fetch_country_names
 

@@ -28,3 +28,7 @@ class SqlQueries:
     RECOVERED INT);
             
     """)
+
+    fetch_country_names = ("""
+    SELECT name from public.country_continent_map;
+    """)

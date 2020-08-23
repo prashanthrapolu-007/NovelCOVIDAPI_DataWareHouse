@@ -1,33 +1,42 @@
 from airflow.operators import BaseOperator
 from airflow.utils import apply_defaults
-from airflow.hooks.postgres_hook import PostgresHook
 import psycopg2
 
+import os
+import csv
 
-class FetchDataFromDB(BaseOperator):
+
+class FetchDataFromDBOperator(BaseOperator):
 
     @apply_defaults
     def __init__(self,
                  postgres_conn_id="",
                  sql_queries="",
                  output_file_name="",
+                 headers="",
                  *args, **kwargs):
-        super(FetchDataFromDB, self).__init__(*args, **kwargs)
+        super(FetchDataFromDBOperator, self).__init__(*args, **kwargs)
         self.postgres_conn_id = postgres_conn_id
         self.sql_queries = sql_queries
         self.output_file_name = output_file_name
+        self.headers = headers
 
     def execute(self, context):
         self.log.info('Fetching data from DB')
         try:
-            # pg_hook = PostgresHook(postgres_conn_id=self.postgres_conn_id, schema='testdb')
-            # connector = pg_hook.get_conn()
-            connection = psycopg2.connect("host=localhost dbname=testdb user=postgres password=1234")
+            connection = psycopg2.connect("host=localhost dbname=testdb user=postgres password=admin")
             cursor = connection.cursor()
             cursor.execute(self.sql_queries)
-            all = cursor.fetchall()
-            with open('../../data/'+self.output_file_name+'.csv', 'w'):
-                #TODO
-                pass
+            data = cursor.fetchall()
+            self.log.info('fetched data from postgres')
+
+            file_path = '/home/nani/airflow_projects/Corona_DataWareHouse_Analytics/airflow/data/'
+            with open(file_path + self.output_file_name + '.csv', 'w') as file:
+                writer = csv.writer(file, delimiter=",")
+                writer.writerow(self.headers)
+                writer.writerows(data)
         except Exception as e:
             self.log.info('Error:{}'.format(e))
+        finally:
+            connection.close()
+            self.log.info('Connection closed successfully!')
