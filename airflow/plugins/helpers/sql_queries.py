@@ -27,23 +27,7 @@ class SqlQueries:
     SUB_REGION_CODE VARCHAR(10),
     REGION_CODE VARCHAR(10),
     SUB_REGION VARCHAR(50)
-    );    
-     
-    -- creating country_continent_map table
-    CREATE TABLE IF NOT EXISTS public.country_continent_map(
-    NAME VARCHAR(50),
-    ALPHA_2 VARCHAR(10),
-    ALPHA_3 VARCHAR(10),
-    COUNTRY_CODE VARCHAR(10),
-    ISO_3166_2 VARCHAR(20),
-    REGION VARCHAR(50),
-    SUB_REGION VARCHAR(50),
-    INTERMEDIATE_REGION VARCHAR(50),
-    REGION_CODE VARCHAR(10),
-    SUB_REGION_CODE VARCHAR(10),
-    INTERMEDIATE_REGION_CODE VARCHAR(10) 
-    );    
-    
+    );        
     
     -- creating fact table store corona data from api
     CREATE TABLE IF NOT EXISTS public.fact_corona_data_api(
@@ -57,6 +41,6 @@ class SqlQueries:
             
     """)
 
-    fetch_country_names = ("""
-    SELECT name from public.country_continent_map;
+    fetch_country_region_subregion_codes = ("""
+    SELECT country_code, region_code, sub_region_code, name from public.dim_country;
     """)

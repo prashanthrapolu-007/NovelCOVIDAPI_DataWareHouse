@@ -3,7 +3,6 @@ from airflow.operators.python_operator import PythonOperator
 from airflow import DAG
 from operators import CreateTablesOperator, LoadFromCSVOperator, FetchDataFromDBOperator
 from helpers import SqlQueries, pyhelpers
-from airflow.operators.sqlite_operator import SqliteOperator
 
 import os
 from datetime import datetime, timedelta, date
@@ -20,10 +19,10 @@ with DAG('setup_base_data', default_args=default_args, schedule_interval='@once'
         task_id='dummy_start'
     )
 
-    # create_base_tables = CreateTablesOperator(
-    #     task_id='create_dimension_and_fact_tables',
-    #     sql_queries=SqlQueries.create_dim_and_fact_tables
-    # )
+    create_base_tables = CreateTablesOperator(
+        task_id='create_dimension_and_fact_tables',
+        sql_queries=SqlQueries.create_dim_and_fact_tables
+    )
 
     get_data_for_dim_country = PythonOperator(
         task_id='get_dim_country_data',
@@ -76,27 +75,26 @@ with DAG('setup_base_data', default_args=default_args, schedule_interval='@once'
         table_name='public.dim_sub_region'
     )
 
-    # fetch_country_names = FetchDataFromDBOperator(
-    #     task_id='fetch_country_names',
-    #     sql_queries=SqlQueries.fetch_country_names,
-    #     output_file_name='countries',
-    #     headers=['Country']
-    # )
-    #
-    # get_historical_data_from_api = PythonOperator(
-    #     task_id='get_historical_data_from_api',
-    #     python_callable=pyhelpers.get_data_from_api,
-    #     op_args=[path_to_data_folder+'historical_data.csv', path_to_data_folder+'countries.csv', 'all']
-    # )
-    #
-    # stage_historical_data = LoadFromCSVOperator(
-    #     task_id='stage_historical_data',
-    #     skip_header_row=False,
-    #     file_path=path_to_data_folder + 'historical_data.csv',
-    #     table_name='public.corona_data_api'
-    # )
+    fetch_codes_for_fact_table = FetchDataFromDBOperator(
+        task_id='fetch_codes_for_fact_table',
+        sql_queries=SqlQueries.fetch_country_region_subregion_codes,
+        output_file_name=path_to_data_folder+'base_for_fact_table.csv',
+        headers=['Country_code', 'region_code', 'sub_region_code', 'name']
+    )
 
-start_task >> get_data_for_dim_country >> stage_country_dim_table
+    get_historical_data_from_api = PythonOperator(
+        task_id='get_historical_data_from_api',
+        python_callable=pyhelpers.get_data_from_api,
+        op_args=[path_to_data_folder+'historical_data2.csv', path_to_data_folder+'base_for_fact_table.csv', 'all']
+    )
+
+    load_fact_table_historical_data = LoadFromCSVOperator(
+        task_id='load_fact_table_historical_data',
+        skip_header_row=False,
+        file_path=path_to_data_folder + 'historical_data2.csv',
+        table_name='public.fact_corona_data_api'
+    )
+
+start_task >> get_data_for_dim_country >> stage_country_dim_table >> fetch_codes_for_fact_table >> load_fact_table_historical_data
 start_task >> get_data_for_dim_region >> stage_region_dim_table
 start_task >> get_data_for_dim_sub_region >> stage_sub_region_dim_table
-# >> stage_mapping_table >> fetch_country_names >> get_historical_data_from_api >> stage_historical_data

@@ -29,8 +29,7 @@ class FetchDataFromDBOperator(BaseOperator):
             data = cursor.fetchall()
             self.log.info('fetched data from postgres')
 
-            file_path = '/home/nani/airflow_projects/Corona_DataWareHouse_Analytics/airflow/data/'
-            with open(file_path + self.output_file_name + '.csv', 'w') as file:
+            with open(self.output_file_name, 'w') as file:
                 writer = csv.writer(file, delimiter=",")
                 writer.writerow(self.headers)
                 writer.writerows(data)
