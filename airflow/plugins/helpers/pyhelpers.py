@@ -1,5 +1,6 @@
 import requests
 import csv
+import pandas as pd
 
 
 def fetch_historical_api_data(output_file_path, url, country):
@@ -63,4 +64,11 @@ def get_data_from_api(output_file_path, countries_csv_file, history_param):
             fetch_yesterday_data_from_api(output_file_path, url)
         except Exception as e:
             raise ValueError(e)
+
+
+def get_specific_columns_and_store_csv(destination_file, source_file, columns):
+    source_df = pd.read_csv(source_file, usecols=columns)
+    source_df = source_df[columns]
+    source_df = source_df.drop_duplicates().dropna()
+    source_df.to_csv(destination_file, index=False)
 

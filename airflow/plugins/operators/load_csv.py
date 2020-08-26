@@ -17,7 +17,8 @@ class LoadFromCSVOperator(BaseOperator):
     def execute(self, context):
         self.log.info('Loading table {} from CSV'.format(self.table_name))
         try:
-            connection = psycopg2.connect("host=localhost dbname=testdb user=postgres password=admin")
+            connection = psycopg2.connect(host=os.getenv('host'), dbname=os.getenv('dbname'),
+                                          user=os.getenv('user'), password=os.getenv('password'))
             cursor = connection.cursor()
             with open(self.file_path, 'r') as f:
                 if self.skip_header_row:
@@ -28,5 +29,6 @@ class LoadFromCSVOperator(BaseOperator):
         except Exception as e:
             self.log.info('Error:{}'.format(e))
         finally:
+            cursor.close()
             connection.close()
             self.log.info('Connection closed successfully!')

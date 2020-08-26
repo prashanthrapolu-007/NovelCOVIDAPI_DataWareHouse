@@ -20,36 +20,83 @@ with DAG('setup_base_data', default_args=default_args, schedule_interval='@once'
         task_id='dummy_start'
     )
 
-    create_base_tables = CreateTablesOperator(
-        task_id='create_stage_base_tables',
-        sql_queries=SqlQueries.create_staging_tables
+    # create_base_tables = CreateTablesOperator(
+    #     task_id='create_dimension_and_fact_tables',
+    #     sql_queries=SqlQueries.create_dim_and_fact_tables
+    # )
+
+    get_data_for_dim_country = PythonOperator(
+        task_id='get_dim_country_data',
+        python_callable=pyhelpers.get_specific_columns_and_store_csv,
+        op_kwargs={
+            'source_file': path_to_data_folder+"country_continent_isocodes.csv",
+            'destination_file': path_to_data_folder+"dim_country.csv",
+            'columns': ['country-code', 'region-code', 'sub-region-code', 'name', 'alpha-2', 'alpha-3', 'iso_3166-2']
+        }
     )
 
-    stage_mapping_table = LoadFromCSVOperator(
-        task_id='stage_mapping_table',
+    get_data_for_dim_region = PythonOperator(
+        task_id='get_dim_region_data',
+        python_callable=pyhelpers.get_specific_columns_and_store_csv,
+        op_kwargs={
+            'source_file': path_to_data_folder + "country_continent_isocodes.csv",
+            'destination_file': path_to_data_folder + "dim_region.csv",
+            'columns': ['region-code', 'region']
+        }
+    )
+
+    get_data_for_dim_sub_region = PythonOperator(
+        task_id='get_dim_sub_region_data',
+        python_callable=pyhelpers.get_specific_columns_and_store_csv,
+        op_kwargs={
+            'source_file': path_to_data_folder + "country_continent_isocodes.csv",
+            'destination_file': path_to_data_folder + "dim_sub_region.csv",
+            'columns': ['sub-region-code', 'region-code', 'sub-region']
+        }
+    )
+
+    stage_country_dim_table = LoadFromCSVOperator(
+        task_id='stage_country_dim_table',
         skip_header_row=True,
-        file_path=path_to_data_folder + 'country_continent_isocodes.csv',
-        table_name='public.country_continent_map'
+        file_path=path_to_data_folder + 'dim_country.csv',
+        table_name='public.dim_country'
     )
 
-    fetch_country_names = FetchDataFromDBOperator(
-        task_id='fetch_country_names',
-        sql_queries=SqlQueries.fetch_country_names,
-        output_file_name='countries',
-        headers=['Country']
+    stage_region_dim_table = LoadFromCSVOperator(
+        task_id='stage_region_dim_table',
+        skip_header_row=True,
+        file_path=path_to_data_folder + 'dim_region.csv',
+        table_name='public.dim_region'
     )
 
-    get_historical_data_from_api = PythonOperator(
-        task_id='get_historical_data_from_api',
-        python_callable=pyhelpers.get_data_from_api,
-        op_args=[path_to_data_folder+'historical_data.csv', path_to_data_folder+'countries.csv', 'all']
+    stage_sub_region_dim_table = LoadFromCSVOperator(
+        task_id='stage_sub_region_dim_table',
+        skip_header_row=True,
+        file_path=path_to_data_folder + 'dim_sub_region.csv',
+        table_name='public.dim_sub_region'
     )
 
-    stage_historical_data = LoadFromCSVOperator(
-        task_id='stage_historical_data',
-        skip_header_row=False,
-        file_path=path_to_data_folder + 'historical_data.csv',
-        table_name='public.corona_data_api'
-    )
+    # fetch_country_names = FetchDataFromDBOperator(
+    #     task_id='fetch_country_names',
+    #     sql_queries=SqlQueries.fetch_country_names,
+    #     output_file_name='countries',
+    #     headers=['Country']
+    # )
+    #
+    # get_historical_data_from_api = PythonOperator(
+    #     task_id='get_historical_data_from_api',
+    #     python_callable=pyhelpers.get_data_from_api,
+    #     op_args=[path_to_data_folder+'historical_data.csv', path_to_data_folder+'countries.csv', 'all']
+    # )
+    #
+    # stage_historical_data = LoadFromCSVOperator(
+    #     task_id='stage_historical_data',
+    #     skip_header_row=False,
+    #     file_path=path_to_data_folder + 'historical_data.csv',
+    #     table_name='public.corona_data_api'
+    # )
 
-start_task >> create_base_tables >> stage_mapping_table >> fetch_country_names >> get_historical_data_from_api >> stage_historical_data
+start_task >> get_data_for_dim_country >> stage_country_dim_table
+start_task >> get_data_for_dim_region >> stage_region_dim_table
+start_task >> get_data_for_dim_sub_region >> stage_sub_region_dim_table
+# >> stage_mapping_table >> fetch_country_names >> get_historical_data_from_api >> stage_historical_data

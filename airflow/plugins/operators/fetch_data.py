@@ -22,7 +22,8 @@ class FetchDataFromDBOperator(BaseOperator):
     def execute(self, context):
         self.log.info('Fetching data from DB')
         try:
-            connection = psycopg2.connect("host=localhost dbname=testdb user=postgres password=admin")
+            connection = psycopg2.connect(host=os.getenv('host'), dbname=os.getenv('dbname'),
+                                          user=os.getenv('user'), password=os.getenv('password'))
             cursor = connection.cursor()
             cursor.execute(self.sql_queries)
             data = cursor.fetchall()
@@ -37,5 +38,6 @@ class FetchDataFromDBOperator(BaseOperator):
         except Exception as e:
             self.log.info('Error:{}'.format(e))
         finally:
+            cursor.close()
             connection.close()
             self.log.info('Connection closed successfully!')

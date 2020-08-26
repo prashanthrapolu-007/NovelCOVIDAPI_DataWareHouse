@@ -1,6 +1,7 @@
 from airflow.operators import BaseOperator
 from airflow.utils.decorators import apply_defaults
 import psycopg2
+import os
 
 
 class CreateTablesOperator(BaseOperator):
@@ -14,8 +15,9 @@ class CreateTablesOperator(BaseOperator):
 
     def execute(self, context):
         try:
-            self.log.info('Creating Stage Tables')
-            conn = psycopg2.connect("host=localhost dbname=testdb user=postgres password=admin")
+            self.log.info('Creating Dimension and Fact Tables')
+            conn = psycopg2.connect(host=os.getenv('host'), dbname=os.getenv('dbname'),
+                                    user=os.getenv('user'), password=os.getenv('password'))
             cursor = conn.cursor()
             cursor.execute(self.sql_queries)
             conn.commit()
@@ -24,5 +26,7 @@ class CreateTablesOperator(BaseOperator):
         except Exception as e:
             self.log.info('Error:{}'.format(e))
         finally:
-            self.log.info('Closing connection')
+            cursor.close()
             conn.close()
+            self.log.info('Closing connection')
+
