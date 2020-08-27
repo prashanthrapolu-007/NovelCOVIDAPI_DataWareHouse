@@ -8,11 +8,13 @@ class LoadFromCSVOperator(BaseOperator):
                  file_path="",
                  table_name="",
                  skip_header_row=False,
+                 delete_file_after_load=False,
                  *args, **kwargs):
         super(LoadFromCSVOperator, self).__init__(*args, **kwargs)
         self.file_path = file_path
         self.table_name = table_name
         self.skip_header_row = skip_header_row
+        self.delete_file_after_load = delete_file_after_load
 
     def execute(self, context):
         self.log.info('Loading table {} from CSV'.format(self.table_name))
@@ -26,6 +28,8 @@ class LoadFromCSVOperator(BaseOperator):
                 cursor.copy_from(f, self.table_name, sep=',')
             connection.commit()
             self.log.info('Successfully loaded table {} from CSV'.format(self.table_name))
+            if self.delete_file_after_load:
+                os.remove(self.file_path)
         except Exception as e:
             self.log.info('Error:{}'.format(e))
         finally:

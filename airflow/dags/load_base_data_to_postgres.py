@@ -28,8 +28,8 @@ with DAG('setup_base_data', default_args=default_args, schedule_interval='@once'
         task_id='get_dim_country_data',
         python_callable=pyhelpers.get_specific_columns_and_store_csv,
         op_kwargs={
-            'source_file': path_to_data_folder+"country_continent_isocodes.csv",
-            'destination_file': path_to_data_folder+"dim_country.csv",
+            'source_file': path_to_data_folder + "country_continent_isocodes.csv",
+            'destination_file': path_to_data_folder + "dim_country.csv",
             'columns': ['country-code', 'region-code', 'sub-region-code', 'name', 'alpha-2', 'alpha-3', 'iso_3166-2']
         }
     )
@@ -78,14 +78,14 @@ with DAG('setup_base_data', default_args=default_args, schedule_interval='@once'
     fetch_codes_for_fact_table = FetchDataFromDBOperator(
         task_id='fetch_codes_for_fact_table',
         sql_queries=SqlQueries.fetch_country_region_subregion_codes,
-        output_file_name=path_to_data_folder+'base_for_fact_table.csv',
-        headers=['Country_code', 'region_code', 'sub_region_code', 'name']
+        output_file_name=path_to_data_folder + 'base_for_fact_table.csv',
+        headers=['country_code', 'region_code', 'sub_region_code', 'name']
     )
 
     get_historical_data_from_api = PythonOperator(
         task_id='get_historical_data_from_api',
         python_callable=pyhelpers.get_data_from_api,
-        op_args=[path_to_data_folder+'historical_data2.csv', path_to_data_folder+'base_for_fact_table.csv', 'all']
+        op_args=[path_to_data_folder + 'historical_data2.csv', path_to_data_folder + 'base_for_fact_table.csv', 'all']
     )
 
     load_fact_table_historical_data = LoadFromCSVOperator(
@@ -95,6 +95,8 @@ with DAG('setup_base_data', default_args=default_args, schedule_interval='@once'
         table_name='public.fact_corona_data_api'
     )
 
-start_task >> get_data_for_dim_country >> stage_country_dim_table >> fetch_codes_for_fact_table >> load_fact_table_historical_data
-start_task >> get_data_for_dim_region >> stage_region_dim_table
-start_task >> get_data_for_dim_sub_region >> stage_sub_region_dim_table
+start_task >> create_base_tables
+create_base_tables >> get_data_for_dim_country >> stage_country_dim_table >> fetch_codes_for_fact_table \
+>> get_historical_data_from_api >> load_fact_table_historical_data
+create_base_tables >> get_data_for_dim_region >> stage_region_dim_table
+create_base_tables >> get_data_for_dim_sub_region >> stage_sub_region_dim_table

@@ -23,7 +23,7 @@ with DAG('load_daily_data', default_args=default_args, schedule_interval='@once'
         python_callable=pyhelpers.get_data_from_api,
         op_kwargs={
             'output_file_path': path_to_data_folder + 'yesterday_api_data.csv',
-            'countries_csv_file': path_to_data_folder+'countries.csv',
+            'countries_csv_file': path_to_data_folder+'base_for_fact_table.csv',
             'history_param': 1
         }
     )
@@ -32,7 +32,8 @@ with DAG('load_daily_data', default_args=default_args, schedule_interval='@once'
         task_id='merge_data',
         file_path=path_to_data_folder + 'yesterday_api_data.csv',
         skip_header_row=False,
-        table_name='public.corona_data_api'
+        delete_file_after_load=True,
+        table_name='public.fact_corona_data_api'
     )
 
 
