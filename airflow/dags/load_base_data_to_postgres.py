@@ -58,21 +58,24 @@ with DAG('setup_base_data', default_args=default_args, schedule_interval='@once'
         task_id='stage_country_dim_table',
         skip_header_row=True,
         file_path=path_to_data_folder + 'dim_country.csv',
-        table_name='public.dim_country'
+        table_name='public.dim_country',
+        delete_file_after_load=True
     )
 
     stage_region_dim_table = LoadFromCSVOperator(
         task_id='stage_region_dim_table',
         skip_header_row=True,
         file_path=path_to_data_folder + 'dim_region.csv',
-        table_name='public.dim_region'
+        table_name='public.dim_region',
+        delete_file_after_load=True
     )
 
     stage_sub_region_dim_table = LoadFromCSVOperator(
         task_id='stage_sub_region_dim_table',
         skip_header_row=True,
         file_path=path_to_data_folder + 'dim_sub_region.csv',
-        table_name='public.dim_sub_region'
+        table_name='public.dim_sub_region',
+        delete_file_after_load=True
     )
 
     fetch_codes_for_fact_table = FetchDataFromDBOperator(
@@ -92,7 +95,8 @@ with DAG('setup_base_data', default_args=default_args, schedule_interval='@once'
         task_id='load_fact_table_historical_data',
         skip_header_row=False,
         file_path=path_to_data_folder + 'historical_data2.csv',
-        table_name='public.fact_corona_data_api'
+        table_name='public.fact_corona_data_api',
+        delete_file_after_load=True
     )
 
 start_task >> create_base_tables
