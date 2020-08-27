@@ -106,3 +106,5 @@ create_base_tables >> get_data_for_dim_region >> stage_region_dim_table
 create_base_tables >> get_data_for_dim_sub_region >> stage_sub_region_dim_table
 
 stage_country_dim_table >> fetch_codes_for_fact_table >> get_historical_data_from_api >> load_fact_table_historical_data
+stage_region_dim_table >> fetch_codes_for_fact_table
+stage_sub_region_dim_table >> fetch_codes_for_fact_table

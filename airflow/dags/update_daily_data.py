@@ -18,23 +18,23 @@ with DAG('load_daily_data', default_args=default_args, schedule_interval='@once'
         task_id='dummy_start'
     )
 
-#     get_yesterday_data_from_api = PythonOperator(
-#         task_id='get_yesterday_data',
-#         python_callable=pyhelpers.get_data_from_api,
-#         op_kwargs={
-#             'output_file_path': path_to_data_folder + 'yesterday_api_data.csv',
-#             'countries_csv_file': path_to_data_folder+'base_for_fact_table.csv',
-#             'history_param': 1
-#         }
-#     )
-#
-#     merge_yesterday_data_with_historical_data = LoadFromCSVOperator(
-#         task_id='merge_data',
-#         file_path=path_to_data_folder + 'yesterday_api_data.csv',
-#         skip_header_row=False,
-#         delete_file_after_load=True,
-#         table_name='public.fact_corona_data_api'
-#     )
+    get_yesterday_data_from_api = PythonOperator(
+        task_id='get_yesterday_data',
+        python_callable=pyhelpers.get_data_from_api,
+        op_kwargs={
+            'output_file_path': path_to_data_folder + 'yesterday_api_data.csv',
+            'countries_csv_file': path_to_data_folder+'base_for_fact_table.csv',
+            'history_param': 1
+        }
+    )
+
+    merge_yesterday_data_with_historical_data = LoadFromCSVOperator(
+        task_id='merge_data',
+        file_path=path_to_data_folder + 'yesterday_api_data.csv',
+        skip_header_row=False,
+        delete_file_after_load=True,
+        table_name='public.fact_corona_data_api'
+    )
 
     visualize_analytics = PythonOperator(
         task_id='visualize_analytics',
@@ -47,4 +47,4 @@ with DAG('load_daily_data', default_args=default_args, schedule_interval='@once'
         }
     )
 
-start_task >> visualize_analytics
+start_task >> get_yesterday_data_from_api >> merge_yesterday_data_with_historical_data >> visualize_analytics

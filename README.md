@@ -23,7 +23,7 @@ Following are the fact and dimension tables used
   >2. dim_region
   >3. dim_sub_region
 ### Data Model -- Snowflake
-
+(/imgs/Entity_Relationship_Diagram.png)
 ## ETL Flow
 There are two dags.
 * load_base_data_to_postgres: This is a one-time job that is run when initially setting up the system.
@@ -31,10 +31,10 @@ There are two dags.
   2. Collects data required from API and stores them in local data folder
   3. Once the data is collected, a task in airflow is triggered to load the data into respective tables.
   4. Dag execution completes once the data is uploaded into Data Warehouse
-##### Dag Image
+(/imgs/dag1.png)
   
 * udpate_daily_data: This job is scheduled to run every day
   1. Collects data from API for the date on which it is running
   2. UPSERTS the data into fact table
   3. Once new data is availabe in Data Warehouse, an airflow task is triggered to create analytics
-##### Dag Image  
+(/imgs/dag2.png)  
