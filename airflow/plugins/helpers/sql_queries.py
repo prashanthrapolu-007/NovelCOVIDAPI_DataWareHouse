@@ -45,7 +45,7 @@ class SqlQueries:
     SELECT country_code, region_code, sub_region_code, name from public.dim_country;
     """)
 
-    visualize_last_7_days_data = \
+    visualize_last_7_days_country_data = \
         ("""
             select
             b.name, a.new_cases_in_last_7_days, a.new_recoveries_in_last_7_days, a.new_deaths_in_last_7_days
@@ -77,3 +77,65 @@ class SqlQueries:
             a.record_date = (select max(record_date) from public.fact_corona_data_api)
         order by 
             new_cases_in_last_7_days;""")
+
+    visualize_last_15_days_country_data = ("""
+    select
+            b.name, a.new_cases_in_last_15_days, a.new_recoveries_in_last_15_days, a.new_deaths_in_last_15_days
+            from
+        (	
+        select
+            country_code,
+            record_date,
+            cases - lag(cases,14) over (partition by country_code order by record_date) as new_cases_in_last_15_days,
+            recovered - lag(recovered,14) over (partition by country_code order by record_date) as new_recoveries_in_last_15_days,
+            deaths - lag(deaths,14) over (partition by country_code order by record_date) as new_deaths_in_last_15_days
+        from 
+            public.fact_corona_data_api
+        where country_code in (select
+                                    country_code
+                                from
+                                    public.fact_corona_data_api
+                                where
+                                    record_date = (select max(record_date) from public.fact_corona_data_api)
+                                order by 
+                                    cases desc limit 10)) a
+        inner join
+            public.dim_country b
+        on
+            a.country_code = b.country_code
+        where 
+            a.record_date = (select max(record_date) from public.fact_corona_data_api)
+        order by 
+            new_cases_in_last_15_days;
+            """)
+
+    visualize_last_30_days_country_data = ("""
+    select
+        b.name, a.new_cases_in_last_30_days, a.new_recoveries_in_last_30_days, a.new_deaths_in_last_30_days
+        from
+        (	
+        select
+            country_code,
+            record_date,
+            cases - lag(cases,30) over (partition by country_code order by record_date) as new_cases_in_last_30_days,
+            recovered - lag(recovered,30) over (partition by country_code order by record_date) as new_recoveries_in_last_30_days,
+            deaths - lag(deaths,30) over (partition by country_code order by record_date) as new_deaths_in_last_30_days
+        from 
+            public.fact_corona_data_api
+        where country_code in (select
+                                    country_code
+                                from
+                                    public.fact_corona_data_api
+                                where
+                                    record_date = (select max(record_date) from public.fact_corona_data_api)
+                                order by 
+                                    cases desc limit 10)) a
+        inner join
+            public.dim_country b
+        on
+            a.country_code = b.country_code
+        where 
+            a.record_date = (select max(record_date) from public.fact_corona_data_api)
+        order by 
+            new_cases_in_last_30_days;	
+        """)
