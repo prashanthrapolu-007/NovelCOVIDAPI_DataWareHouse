@@ -8,7 +8,8 @@ class NovelCovidAnalyticsPlugin(AirflowPlugin):
     operators = [
         operators.CreateTablesOperator,
         operators.LoadFromCSVOperator,
-        operators.FetchDataFromDBOperator
+        operators.FetchDataFromDBOperator,
+        operators.VisualizeDataOperator
     ]
 
     helpers = [

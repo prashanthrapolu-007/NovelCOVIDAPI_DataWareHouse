@@ -1,9 +1,9 @@
 from airflow import DAG
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.python_operator import PythonOperator
-from operators import LoadFromCSVOperator
+from operators import LoadFromCSVOperator, VisualizeDataOperator
 from datetime import datetime, timedelta
-from helpers import pyhelpers
+from helpers import SqlQueries, pyhelpers
 
 path_to_data_folder = '/home/nani/airflow_projects/Corona_DataWareHouse_Analytics/airflow/data/'
 
@@ -36,5 +36,9 @@ with DAG('load_daily_data', default_args=default_args, schedule_interval='@once'
         table_name='public.fact_corona_data_api'
     )
 
+    visualize_last_seven_days_data = VisualizeDataOperator(
+        task_id='last_seven_days_viz',
+        sql_queries=SqlQueries.visualize_last_7_days_data
+    )
 
-start_task >> get_yesterday_data_from_api >> merge_yesterday_data_with_historical_data
+start_task >> get_yesterday_data_from_api >> merge_yesterday_data_with_historical_data >> visualize_last_seven_days_data

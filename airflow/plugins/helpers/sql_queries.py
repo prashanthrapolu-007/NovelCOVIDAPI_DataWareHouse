@@ -44,3 +44,36 @@ class SqlQueries:
     fetch_country_region_subregion_codes = ("""
     SELECT country_code, region_code, sub_region_code, name from public.dim_country;
     """)
+
+    visualize_last_7_days_data = \
+        ("""
+            select
+            b.name, a.new_cases_in_last_7_days, a.new_recoveries_in_last_7_days, a.new_deaths_in_last_7_days
+            from
+        (select
+            country_code,
+            record_date,
+            cases - lag(cases,7) over (partition by country_code order by record_date) as new_cases_in_last_7_days,
+            recovered - lag(recovered,7) over (partition by country_code order by record_date) as new_recoveries_in_last_7_days,
+            deaths - lag(deaths,7) over (partition by country_code order by record_date) as new_deaths_in_last_7_days, 
+            cases,
+            deaths,
+            recovered
+        from 
+            public.fact_corona_data_api
+        where country_code in (select
+                                    country_code
+                                from
+                                    public.fact_corona_data_api
+                                where
+                                    record_date = (select max(record_date) from public.fact_corona_data_api)
+                                order by 
+                                    cases desc limit 10)) a
+        inner join
+            public.dim_country b
+        on
+            a.country_code = b.country_code
+        where 
+            a.record_date = (select max(record_date) from public.fact_corona_data_api)
+        order by 
+            new_cases_in_last_7_days;""")
