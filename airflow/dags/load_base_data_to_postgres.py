@@ -100,7 +100,9 @@ with DAG('setup_base_data', default_args=default_args, schedule_interval='@once'
     )
 
 start_task >> create_base_tables
-create_base_tables >> get_data_for_dim_country >> stage_country_dim_table >> fetch_codes_for_fact_table \
->> get_historical_data_from_api >> load_fact_table_historical_data
+
+create_base_tables >> get_data_for_dim_country >> stage_country_dim_table
 create_base_tables >> get_data_for_dim_region >> stage_region_dim_table
 create_base_tables >> get_data_for_dim_sub_region >> stage_sub_region_dim_table
+
+stage_country_dim_table >> fetch_codes_for_fact_table >> get_historical_data_from_api >> load_fact_table_historical_data

@@ -3,9 +3,6 @@ import os
 import matplotlib.pyplot as plt
 
 
-path_to_viz = '/home/nani/airflow_projects/Corona_DataWareHouse_Analytics/airflow/data/analytics/'
-
-
 def connect_to_db():
     conn = psycopg2.connect(host=os.getenv('host'), dbname=os.getenv('dbname'),
                             user=os.getenv('user'), password=os.getenv('password'))
@@ -24,7 +21,7 @@ def plot_bar_graph(country, records, file_name, xlabel):
 
     plt.yticks(x_pos, country)
     plt.tight_layout()
-    plt.savefig(path_to_viz+'/'+file_name+'.png', bbox_inches = "tight")
+    plt.savefig(os.getenv('path_to_viz')+'/'+file_name+'.png', bbox_inches="tight")
     plt.close()
 
 
@@ -32,10 +29,10 @@ def get_data_from_db(conn, sql_queries):
     conn = connect_to_db()
     cursor = conn.cursor()
     cursor.execute(sql_queries)
-    all = cursor.fetchall()
+    results = cursor.fetchall()
     cursor.close()
     conn.close()
-    return all
+    return results
 
 
 def visualize_graphs(sql_queries, xlabel):
