@@ -14,7 +14,7 @@ After initial set up, a job is scheduled that runs everyday to fetch the data fo
 As of now, analytics are generated using Python's Matlotlib.
 
 
-## Data Modeling
+## Dimensional Data Modeling
 Following are the fact and dimension tables used
 ### Fact Tables
   >1. fact_corona_data_api
@@ -22,8 +22,8 @@ Following are the fact and dimension tables used
   >1. dim_country
   >2. dim_region
   >3. dim_sub_region
-### Data Model -- Snowflake
-![Snowflake Data Model](/imgs/Entity_Relationship_Diagram.png)
+### Star Schema 
+![Entity Relationship Diagram](/imgs/Entity_Relationship_Diagram.png)
 ## ETL Flow
 There are two dags.
 * load_base_data_to_postgres: This is a one-time job that is run when initially setting up the system.

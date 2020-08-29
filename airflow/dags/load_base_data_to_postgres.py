@@ -12,7 +12,7 @@ default_args = {
     'start_date': datetime(2019, 1, 1),
     'retry_delay': timedelta(minutes=5)
 }
-path_to_data_folder = '/home/nani/airflow_projects/Corona_DataWareHouse_Analytics/airflow/data/'
+
 
 with DAG('setup_base_data', default_args=default_args, schedule_interval='@once') as dag:
     start_task = DummyOperator(
@@ -28,8 +28,8 @@ with DAG('setup_base_data', default_args=default_args, schedule_interval='@once'
         task_id='get_dim_country_data',
         python_callable=pyhelpers.get_specific_columns_and_store_csv,
         op_kwargs={
-            'source_file': path_to_data_folder + "country_continent_isocodes.csv",
-            'destination_file': path_to_data_folder + "dim_country.csv",
+            'source_file': os.getenv('path_to_data_folder') + "country_continent_isocodes.csv",
+            'destination_file': os.getenv('path_to_data_folder') + "dim_country.csv",
             'columns': ['country-code', 'region-code', 'sub-region-code', 'name', 'alpha-2', 'alpha-3', 'iso_3166-2']
         }
     )
@@ -38,8 +38,8 @@ with DAG('setup_base_data', default_args=default_args, schedule_interval='@once'
         task_id='get_dim_region_data',
         python_callable=pyhelpers.get_specific_columns_and_store_csv,
         op_kwargs={
-            'source_file': path_to_data_folder + "country_continent_isocodes.csv",
-            'destination_file': path_to_data_folder + "dim_region.csv",
+            'source_file': os.getenv('path_to_data_folder') + "country_continent_isocodes.csv",
+            'destination_file': os.getenv('path_to_data_folder') + "dim_region.csv",
             'columns': ['region-code', 'region']
         }
     )
@@ -48,8 +48,8 @@ with DAG('setup_base_data', default_args=default_args, schedule_interval='@once'
         task_id='get_dim_sub_region_data',
         python_callable=pyhelpers.get_specific_columns_and_store_csv,
         op_kwargs={
-            'source_file': path_to_data_folder + "country_continent_isocodes.csv",
-            'destination_file': path_to_data_folder + "dim_sub_region.csv",
+            'source_file': os.getenv('path_to_data_folder') + "country_continent_isocodes.csv",
+            'destination_file': os.getenv('path_to_data_folder') + "dim_sub_region.csv",
             'columns': ['sub-region-code', 'region-code', 'sub-region']
         }
     )
@@ -57,7 +57,7 @@ with DAG('setup_base_data', default_args=default_args, schedule_interval='@once'
     stage_country_dim_table = LoadFromCSVOperator(
         task_id='stage_country_dim_table',
         skip_header_row=True,
-        file_path=path_to_data_folder + 'dim_country.csv',
+        file_path=os.getenv('path_to_data_folder') + 'dim_country.csv',
         table_name='public.dim_country',
         delete_file_after_load=True
     )
@@ -65,7 +65,7 @@ with DAG('setup_base_data', default_args=default_args, schedule_interval='@once'
     stage_region_dim_table = LoadFromCSVOperator(
         task_id='stage_region_dim_table',
         skip_header_row=True,
-        file_path=path_to_data_folder + 'dim_region.csv',
+        file_path=os.getenv('path_to_data_folder') + 'dim_region.csv',
         table_name='public.dim_region',
         delete_file_after_load=True
     )
@@ -73,7 +73,7 @@ with DAG('setup_base_data', default_args=default_args, schedule_interval='@once'
     stage_sub_region_dim_table = LoadFromCSVOperator(
         task_id='stage_sub_region_dim_table',
         skip_header_row=True,
-        file_path=path_to_data_folder + 'dim_sub_region.csv',
+        file_path=os.getenv('path_to_data_folder') + 'dim_sub_region.csv',
         table_name='public.dim_sub_region',
         delete_file_after_load=True
     )
@@ -81,20 +81,20 @@ with DAG('setup_base_data', default_args=default_args, schedule_interval='@once'
     fetch_codes_for_fact_table = FetchDataFromDBOperator(
         task_id='fetch_codes_for_fact_table',
         sql_queries=SqlQueries.fetch_country_region_subregion_codes,
-        output_file_name=path_to_data_folder + 'base_for_fact_table.csv',
+        output_file_name=os.getenv('path_to_data_folder') + 'base_for_fact_table.csv',
         headers=['country_code', 'region_code', 'sub_region_code', 'name']
     )
 
     get_historical_data_from_api = PythonOperator(
         task_id='get_historical_data_from_api',
         python_callable=pyhelpers.get_data_from_api,
-        op_args=[path_to_data_folder + 'historical_data2.csv', path_to_data_folder + 'base_for_fact_table.csv', 'all']
+        op_args=[os.getenv('path_to_data_folder') + 'historical_data.csv', os.getenv('path_to_data_folder') + 'base_for_fact_table.csv', 'all']
     )
 
     load_fact_table_historical_data = LoadFromCSVOperator(
         task_id='load_fact_table_historical_data',
         skip_header_row=False,
-        file_path=path_to_data_folder + 'historical_data2.csv',
+        file_path=os.getenv('path_to_data_folder') + 'historical_data.csv',
         table_name='public.fact_corona_data_api',
         delete_file_after_load=True
     )

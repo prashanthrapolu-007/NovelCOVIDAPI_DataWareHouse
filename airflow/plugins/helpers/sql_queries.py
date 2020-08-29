@@ -139,3 +139,111 @@ class SqlQueries:
         order by 
             new_cases_in_last_30_days;	
         """)
+
+    visualize_last_7_days_region_data = ("""
+        with temp_table as 
+        (select 
+            a.region_code,
+            a.record_date,
+            a.cases - lag(a.cases,7) over (partition by a.region_code order by a.record_date) as last_7_day_cases,
+            a.recovered - lag(a.recovered,7) over (partition by a.region_code order by a.record_date) as last_7_day_recovered,
+            a.deaths - lag(a.deaths,7) over (partition by a.region_code order by a.record_date) as last_7_day_deaths
+        from
+         (select
+            region_code,
+            record_date,
+            sum(cases) as cases,
+            sum(deaths) as deaths,
+            sum(recovered) as recovered
+        from 
+            public.fact_corona_data_api
+        group by
+            region_code, record_date
+        order by
+            region_code, record_date desc)a)
+            
+        select 
+            dim_region.region,
+            c.last_7_day_cases,
+            c.last_7_day_recovered,
+            c.last_7_day_deaths
+        from 
+            temp_table c
+        inner join
+            dim_region
+        on c.region_code = dim_region.region_code	
+        where
+            c.record_date = (select max(record_date) from temp_table);
+         """)
+
+    visualize_last_15_days_region_data = ("""
+    with temp_table as 
+    (select 
+        a.region_code,
+        a.record_date,
+        a.cases - lag(a.cases,15) over (partition by a.region_code order by a.record_date) as last_15_day_cases,
+        a.recovered - lag(a.recovered,15) over (partition by a.region_code order by a.record_date) as last_15_day_recovered,
+        a.deaths - lag(a.deaths,15) over (partition by a.region_code order by a.record_date) as last_15_day_deaths
+    from
+     (select
+        region_code,
+        record_date,
+        sum(cases) as cases,
+        sum(deaths) as deaths,
+        sum(recovered) as recovered
+    from 
+        public.fact_corona_data_api
+    group by
+        region_code, record_date
+    order by
+        region_code, record_date desc)a)
+        
+    select 
+        dim_region.region,
+        c.last_15_day_cases,
+        c.last_15_day_recovered,
+        c.last_15_day_deaths
+    from 
+        temp_table c
+    inner join
+        dim_region
+    on c.region_code = dim_region.region_code	
+    where
+        c.record_date = (select max(record_date) from temp_table);
+        """)
+
+    visualize_last_30_days_region_data = ("""
+    with temp_table as 
+    (select 
+        a.region_code,
+        a.record_date,
+        a.cases - lag(a.cases,30) over (partition by a.region_code order by a.record_date) as last_30_day_cases,
+        a.recovered - lag(a.recovered,30) over (partition by a.region_code order by a.record_date) as last_30_day_recovered,
+        a.deaths - lag(a.deaths,30) over (partition by a.region_code order by a.record_date) as last_30_day_deaths
+    from
+     (select
+        region_code,
+        record_date,
+        sum(cases) as cases,
+        sum(deaths) as deaths,
+        sum(recovered) as recovered
+    from 
+        public.fact_corona_data_api
+    group by
+        region_code, record_date
+    order by
+        region_code, record_date desc)a)
+        
+    select 
+        dim_region.region,
+        c.last_30_day_cases,
+        c.last_30_day_recovered,
+        c.last_30_day_deaths
+    from 
+        temp_table c
+    inner join
+        dim_region
+    on c.region_code = dim_region.region_code	
+    where
+        c.record_date = (select max(record_date) from temp_table);
+        """)
