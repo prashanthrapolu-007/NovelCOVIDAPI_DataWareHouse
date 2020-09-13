@@ -16,7 +16,7 @@ Following are the fact and dimension tables used
   >1. dim_country
   >2. dim_region
   >3. dim_sub_region
-### Star Schema 
+### Data Model 
 ![Entity Relationship Diagram](/imgs/Entity_Relationship_Diagram.png)
 ## ETL Flow
 The overall data flow and set up is divided across two dags. The first dag is run only once. The second dag is scheduled to run daily.
@@ -35,3 +35,15 @@ DAG 2:
   2. UPSERT the data into fact table
   3. Once new data is availabe in Data Warehouse, an airflow task is triggered to create analytics.
 ![DAG2](/imgs/dag2.png)  
+
+#### Analytics
+* Analytics at country level
+![country_level_analytics](/imgs/countries_analytics.png)
+
+* Analytics at sub_region level
+![subregion_level_analytics](/imgs/sub_regions_analytics.png)
+
+* Analytics at country level
+![region_level_analytics](/imgs/regions_analytics.png)
+
+
