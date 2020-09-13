@@ -43,7 +43,7 @@ DAG 2:
 * Analytics at sub_region level
 ![subregion_level_analytics](/imgs/sub_regions_analytics.png)
 
-* Analytics at country level
+* Analytics at region level
 ![region_level_analytics](/imgs/regions_analytics.png)
 
 
